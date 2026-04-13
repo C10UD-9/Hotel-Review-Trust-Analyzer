@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Review Trust Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1 class="title">Hotel Review Trust Analyzer</h1>
+    <p class="subtitle">Assess whether customer reviews reflect genuine guest experiences</p>
+
+    <form method="POST" class="form" onsubmit="showLoader()">
+        <textarea name="reviews" placeholder="Enter one review per line..."></textarea>
+        <button id="submitBtn" type="submit">Evaluate Review Authenticity</button>
+    </form>
+
+    <div id="loader" class="loader-container">
+        <div class="spinner"></div>
+        <p>Analyzing reviews...</p>
+    </div>
+
+    {% if trust_score is not none %}
+    <div class="summary">
+        <h2>Trust Score: {{ trust_score }}%</h2>
+        <p class="trust-label">
+            {% if trust_score >= 70 %}
+                Highly Trustworthy
+            {% elif trust_score >= 40 %}
+                Moderately Trustworthy
+            {% else %}
+                Low Trust – Suspicious Patterns Detected
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    {% for r in results %}
+    <div class="card {% if r.label == 'Fake' %}fake{% else %}real{% endif %}">
+        <h3>Review {{ loop.index }}</h3>
+        <p>{{ r.text }}</p>
+
+        <div class="info">
+            <span><strong>Label:</strong> {{ r.label }}</span>
+            <span><strong>Fake Probability:</strong> {{ r.prob }}</span>
+        </div>
+
+        {% if r.is_suspicious %}
+        <div class="highlight">
+            Most Suspicious Review
+            <p>{{ r.gemini }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+</div>
+
+<script>
+function showLoader() {
+    document.getElementById("loader").style.display = "flex";
+    document.getElementById("submitBtn").disabled = true;
+}
+</script>
+
+</body>
+</html>
