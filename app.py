@@ -313,7 +313,8 @@ with open('vectorizer.pkl', 'rb') as f:
     vectorizer = pickle.load(f)
 
 # Gemini setup
-genai.configure(api_key="AIzaSyCWpN3IBv3TLuN9i5TDg3eR9iwpiXWzFi4")
+import os
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model_gemini = genai.GenerativeModel("gemini-flash-latest")
 
 gemini_cache = {}
@@ -404,3 +405,10 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+import os
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
