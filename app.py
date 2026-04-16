@@ -1,22 +1,17 @@
-
 from flask import Flask, render_template, request
-import pickle
 import re
-import google.generativeai as genai
+import os
+import joblib
+from google import genai  # ✅ updated SDK
 
 app = Flask(__name__)
 
-# Load model
-with open('model.pkl', 'rb') as f:
-    model = pickle.load(f)
+# ✅ Load ML model safely
+model = joblib.load('model.joblib')
+vectorizer = joblib.load('vectorizer.joblib')
 
-with open('vectorizer.pkl', 'rb') as f:
-    vectorizer = pickle.load(f)
-
-# Gemini setup
-import os
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model_gemini = genai.GenerativeModel("gemini-flash-latest")
+# ✅ Gemini setup (new API)
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 gemini_cache = {}
 
@@ -46,14 +41,20 @@ Type: <AI/Human>
 Authenticity: <Fake/Genuine>
 Reason: <short reason>
 """
-        response = model_gemini.generate_content(prompt)
+
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
+
         result = response.text.strip()
 
-    except:
-        result = "Type: Unknown | Authenticity: Unknown | Reason: API issue"
+    except Exception as e:
+        result = f"Type: Unknown | Authenticity: Unknown | Reason: {str(e)}"
 
     gemini_cache[review] = result
     return result
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -104,12 +105,8 @@ def index():
 
     return render_template('index.html', results=results, trust_score=trust_score)
 
-if __name__ == '__main__':
-    app.run(debug=True)
 
-
-import os
-
+# ✅ Only ONE run block (Render compatible)
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
