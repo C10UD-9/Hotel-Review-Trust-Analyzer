@@ -7,8 +7,8 @@ from google import genai  # ✅ updated SDK
 app = Flask(__name__)
 
 # ✅ Load ML model safely
-model = joblib.load('model.joblib')
-vectorizer = joblib.load('vectorizer.joblib')
+model = joblib.load('model(1).joblib')
+vectorizer = joblib.load('vectorizer(1).joblib')
 
 # ✅ Gemini setup (new API)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
